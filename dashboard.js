@@ -16,16 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // Autorizatsiyani tekshirish
 function checkAuth() {
     const user = localStorage.getItem('currentUser');
+    
     if (!user) {
-        window.location.href = './index.html';
+        // GitHub Pages uchun to'g'ri yo'l
+        window.location.replace('./index.html');
         return;
     }
+
     currentUser = JSON.parse(user);
-    document.getElementById('user-display-name').textContent = currentUser.fullName || currentUser.email;
     
-    // Admin bo'lmasa, ba'zi tugmalarni yashirish mumkin (ixtiyoriy)
-    if (currentUser.role !== 'admin') {
-        // console.log("Oddiy foydalanuvchi");
+    // Foydalanuvchi ismini ko'rsatish
+    const nameEl = document.getElementById('user-display-name');
+    if (nameEl) {
+        nameEl.textContent = currentUser.fullName || currentUser.email;
     }
 }
 
@@ -69,9 +72,10 @@ function setupEventListeners() {
     document.getElementById('create-test-form')?.addEventListener('submit', handleCreateTest);
 
     // Chiqish
+    // Logout qismi
     document.getElementById('logout-btn')?.addEventListener('click', () => {
         localStorage.removeItem('currentUser');
-        window.location.href = 'index.html';
+        window.location.replace('./index.html');
     });
 
     // Tablarni almashtirish

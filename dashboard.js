@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function checkAuth() {
     const user = localStorage.getItem('currentUser');
     if (!user) {
-        window.location.href = 'index.html';
+        window.location.href = './index.html';
         return;
     }
     currentUser = JSON.parse(user);

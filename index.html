@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProTest Platform - Professional Test Tizimi</title>
+    
+    <!-- Kutubxonalar (CDN) -->
+    <!-- Iconlar uchun -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Excel o'qish uchun -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.css"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- QR Kod yasash uchun -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- PDF yasash uchun -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 (Chiroyli xabarlar) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAVIGATSIYA (Tepa qism) -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i> ProTest
+        </div>
+        <div class="nav-links" id="guestNav">
+            <button class="btn btn-primary" onclick="showModal('loginModal')">Kirish</button>
+            <button class="btn btn-outline" onclick="showModal('registerModal')">Ro'yxatdan o'tish</button>
+        </div>
+        <div class="user-profile" id="userNav" style="display: none;">
+            <span id="userNameDisplay">Foydalanuvchi</span>
+            <button class="btn btn-danger" onclick="logout()">Chiqish</button>
+        </div>
+    </nav>
+
+    <!-- ASOSIY SAHIFA (Landing Page) -->
+    <section id="homeSection" class="section active">
+        <div class="hero">
+            <h1>Kelajakni Bugundan Boshlang</h1>
+            <p>Professional test platformasi. O'z bilimingizni sinovdan o'tkazing yoki o'z test bazangizni yarating.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-lg btn-primary" onclick="scrollToFeatures()">Batafsil</button>
+                <button class="btn btn-lg btn-outline-light" onclick="showModal('loginModal')">Boshlash</button>
+            </div>
+        </div>
+        
+        <div class="features" id="featuresSection">
+            <div class="feature-card">
+                <i class="fas fa-file-excel"></i>
+                <h3>Excel Orqali Yuklash</h3>
+                <p>Testlarni tez va oson Excel formatida tizimga joylashtiring.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-chart-pie"></i>
+                <h3>Chuqur Statistika</h3>
+                <p>Har bir ishtirokchi natijasi va umumiy tahlillarni ko'ring.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-qrcode"></i>
+                <h3>QR Kod Tizimi</h3>
+                <p>Testga kirish uchun avtomatik QR kod va link yaratish.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOYDALANUVCHI PANELI (Dashboard) -->
+    <section id="dashboardSection" class="section">
+        <div class="dashboard-container">
+            <aside class="sidebar">
+                <h3>Menyu</h3>
+                <ul>
+                    <li onclick="switchDashTab('createTest')" class="active"><i class="fas fa-plus-circle"></i> Yangi Test</li>
+                    <li onclick="switchDashTab('myTests')"><i class="fas fa-list"></i> Mening Testlarim</li>
+                    <li onclick="switchDashTab('analytics')"><i class="fas fa-chart-line"></i> Statistika</li>
+                    <li onclick="switchDashTab('subjects')"><i class="fas fa-book"></i> Fanlar Bazasi</li>
+                </ul>
+            </aside>
+            
+            <main class="dash-content">
+                <!-- 1. Test Yaratish Qismi -->
+                <div id="createTestTab" class="dash-tab active">
+                    <h2>Yangi Test Tuzish</h2>
+                    
+                    <!-- 1-qadam: Fan tanlash -->
+                    <div class="step-container" id="step1">
+                        <h3>1. Fan tanlang</h3>
+                        <select id="subjectSelect" class="form-control">
+                            <option value="">Tanlang...</option>
+                            <option value="Matematika">Matematika</option>
+                            <option value="Informatika">Informatika</option>
+                            <option value="Fizika">Fizika</option>
+                            <option value="Tarix">Tarix</option>
+                            <option value="new_subject">+ Yangi fan qo'shish</option>
+                        </select>
+                        <input type="text" id="newSubjectInput" class="form-control" placeholder="Yangi fan nomi..." style="display:none; margin-top:10px;">
+                        <button class="btn btn-primary" onclick="goToStep2()">Davom etish</button>
+                    </div>
+
+                    <!-- 2-qadam: Excel yuklash -->
+                    <div class="step-container" id="step2" style="display:none;">
+                        <h3>2. Test savollarini yuklash (Excel)</h3>
+                        <div class="excel-template-info">
+                            <p><strong>Namuna:</strong> Tartib raqami, Savol, To'g'ri javob, Muqobil 1, Muqobil 2, Muqobil 3.</p>
+                            <button class="btn btn-sm btn-outline" onclick="downloadTemplate()"><i class="fas fa-download"></i> Namuna yuklab olish</button>
+                        </div>
+                        <input type="file" id="excelFile" accept=".xlsx, .xls" class="form-control">
+                        <button class="btn btn-primary" onclick="processExcel()">Tekshirish va Davom etish</button>
+                        <button class="btn btn-secondary" onclick="backToStep1()">Ortga</button>
+                    </div>
+
+                    <!-- 3-qadam: Bazani tanlash -->
+                    <div class="step-container" id="step3" style="display:none;">
+                        <h3>3. Bazani tanlang</h3>
+                        <div class="radio-group">
+                            <label class="radio-card">
+                                <input type="radio" name="baseType" value="public" checked>
+                                <div class="card-body">
+                                    <h4>Umumiy Baza</h4>
+                                    <p>Boshqa foydalanuvchilar ham bu testlardan foydalanishi mumkin.</p>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="baseType" value="private">
+                                <div class="card-body">
+                                    <h4>Shaxsiy Baza</h4>
+                                    <p>Faqat siz va siz taklif qilganlar ko'ra oladi.</p>
+                                </div>
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" onclick="goToStep4()">Davom etish</button>
+                        <button class="btn btn-secondary" onclick="backToStep2()">Ortga</button>
+                    </div>
+
+                    <!-- 4-qadam: Sozlamalar -->
+                    <div class="step-container" id="step4" style="display:none;">
+                        <h3>4. Test Parametrlari</h3>
+                        <div class="form-grid">
+                            <div>
+                                <label>Savollar soni:</label>
+                                <input type="number" id="testQuestionCount" class="form-control" placeholder="Masalan: 20">
+                            </div>
+                            <div>
+                                <label>Har bir savol bali:</label>
+                                <input type="number" id="testScorePerQuestion" class="form-control" placeholder="Masalan: 1">
+                            </div>
+                            <div>
+                                <label>Vaqt (daqiqada):</label>
+                                <input type="number" id="testDuration" class="form-control" placeholder="Masalan: 30">
+                            </div>
+                            <div>
+                                <label>Aktivlik muddati:</label>
+                                <select id="testActiveDuration" class="form-control">
+                                    <option value="always">Doimiy aktiv</option>
+                                    <option value="1day">1 kun</option>
+                                    <option value="1week">1 hafta</option>
+                                    <option value="1month">1 oy</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="finalizeTestSetup()">Tasdiqlash va Yaratish</button>
+                        <button class="btn btn-secondary" onclick="backToStep3()">Ortga</button>
+                    </div>
+
+                    <!-- Natija: Link va QR -->
+                    <div class="step-container" id="stepResult" style="display:none;">
+                        <h3>Test Muvaffaqiyatli Yaratildi!</h3>
+                        <div class="result-box">
+                            <div class="qr-area" id="qrcode"></div>
+                            <div class="link-area">
+                                <p>Test havolasi:</p>
+                                <input type="text" id="testLink" readonly class="form-control">
+                                <button class="btn btn-sm btn-primary" onclick="copyLink()"><i class="fas fa-copy"></i> Nusxalash</button>
+                                <button class="btn btn-sm btn-danger" onclick="cancelTest()"><i class="fas fa-trash"></i> Bekor qilish</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-info" onclick="showTestStats()"><i class="fas fa-chart-bar"></i> To'liq Statistika</button>
+                    </div>
+                </div>
+
+                <!-- 2. Mening Testlarim -->
+                <div id="myTestsTab" class="dash-tab">
+                    <h2>Mening Testlarim</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fan</th>
+                                <th>Turi</th>
+                                <th>Savollar</th>
+                                <th>Status</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myTestsTableBody">
+                            <!-- JS orqali to'ldiriladi -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 3. Statistika -->
+                <div id="analyticsTab" class="dash-tab">
+                    <h2>Umumiy Statistika</h2>
+                    <div class="stats-cards">
+                        <div class="stat-card">
+                            <h3>Jami Testlar</h3>
+                            <p id="totalTestsCount">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Jami Ishtirokchilar</h3>
+                            <p id="totalParticipantsCount">0</p>
+                        </div>
+                    </div>
+                    <div id="detailedStatsArea" style="margin-top: 20px;">
+                        <!-- Tanlangan test statistikasi shu yerda chiqadi -->
+                    </div>
+                </div>
+                
+                 <!-- 4. Fanlar Bazasi -->
+                 <div id="subjectsTab" class="dash-tab">
+                    <h2>Fanlar Bazasi</h2>
+                    <p>Bu yerda barcha mavjud fanlar va ulardagi testlar soni ko'rinadi.</p>
+                    <ul id="subjectsList" class="subjects-list">
+                        <!-- JS orqali to'ldiriladi -->
+                    </ul>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- TEST ISHLASH SAHIFASI (Runner) -->
+    <section id="runnerSection" class="section">
+        <div class="runner-container">
+            <!-- Kirish Formasi -->
+            <div id="runnerLogin" class="runner-box">
+                <h2>Testga Kirish</h2>
+                <p>Iltimos, ma'lumotlaringizni kiriting</p>
+                <input type="text" id="studentFullName" class="form-control" placeholder="Ism Familiya Sharif">
+                <input type="text" id="studentGroup" class="form-control" placeholder="Guruh yoki Sinif (ixtiyoriy)">
+                <button class="btn btn-primary btn-block" onclick="startTestProcess()">Boshlash</button>
+            </div>
+
+            <!-- Test Jarayoni -->
+            <div id="runnerQuiz" class="runner-box" style="display:none;">
+                <div class="quiz-header">
+                    <span id="quizTimer"><i class="fas fa-clock"></i> 00:00</span>
+                    <span id="quizProgress">Savol 1 / 10</span>
+                </div>
+                <div class="quiz-body">
+                    <h3 id="questionText">Savol matni...</h3>
+                    <div class="options" id="optionsContainer">
+                        <!-- Variantlar -->
+                    </div>
+                </div>
+                <div class="quiz-footer">
+                    <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>Oldingi</button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Keyingi</button>
+                    <button class="btn btn-success" id="finishBtn" onclick="finishTest()" style="display:none;">Yakunlash</button>
+                </div>
+            </div>
+
+            <!-- Natijalar -->
+            <div id="runnerResult" class="runner-box" style="display:none;">
+                <h2>Natijalar</h2>
+                <div id="resultContent">
+                    <!-- Natijalar JS orqali -->
+                </div>
+                <button class="btn btn-primary" onclick="printResultPDF()"><i class="fas fa-print"></i> Chop etish (PDF)</button>
+                <button class="btn btn-secondary" onclick="location.reload()">Bosh sahifa</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL OYNALAR (Login/Register) -->
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Kirish</h2>
+            <form onsubmit="handleLogin(event)">
+                <input type="email" class="form-control" placeholder="Email" required>
+                <input type="password" class="form-control" placeholder="Parol" required>
+                <button type="submit" class="btn btn-primary btn-block">Kirish</button>
+            </form>
+            <div class="divider">yoki</div>
+            <button class="btn btn-google btn-block" onclick="googleLogin()">
+                <i class="fab fa-google"></i> Google orqali kirish
+            </button>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>Ro'yxatdan o'tish</h2>
+            <form onsubmit="handleRegister(event)">
+                <input type="text" class="form-control" placeholder="To'liq Ism" required>
+                <input type="email" class="form-control" placeholder="Email" required>
+                <input type="password" class="form-control" placeholder="Parol" required>
+                <button type="submit" class="btn btn-primary btn-block">Ro'yxatdan o'tish</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistika Modal (Batafsil) -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" onclick="closeModal('statsModal')">&times;</span>
+            <h2 id="statsModalTitle">Test Statistikasi</h2>
+            <div id="statsModalBody">
+                <!-- Jadval va grafiklar -->
+            </div>
+            <button class="btn btn-primary" onclick="printStatsPDF()"><i class="fas fa-file-pdf"></i> Hisobotni yuklab olish</button>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="test-runner.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
